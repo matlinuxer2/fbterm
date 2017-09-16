@@ -262,6 +262,7 @@ bool Config::parseArgs(s32 argc, s8 **argv)
 				"  -n, --font-names=TEXT           specify font family names\n"
 				"  -s, --font-size=NUM             specify font pixel size\n"
 				"      --font-width=NUM            force font width\n"
+				"      --font-height=NUM           force font height\n"
 				"  -f, --color-foreground=NUM      specify foreground color\n"
 				"  -b, --color-background=NUM      specify background color\n"
 				"  -e, --text-encodings=TEXT       specify additional text encodings\n"

@@ -164,8 +164,18 @@ static s16 get_mode(s16 mode, bool only_print)
 			|| !(minfo->mode_attributes & VBE_ATTR_GRAPHICS)
 			|| !(minfo->mode_attributes & VBE_ATTR_LINEAR)) continue;
 
-		if (minfo->memory_model != VBE_MODEL_PACKED
-			&& minfo->memory_model != VBE_MODEL_RGB) continue;
+        switch (minfo->bits_per_pixel) {
+        case 8:
+                if (minfo->memory_model != VBE_MODEL_PACKED) continue;
+                break;
+        case 15:
+        case 16:
+        case 32:
+                if (minfo->memory_model != VBE_MODEL_RGB) continue;
+                break;
+        default:
+                continue;
+        }
 
 		valid_mode = true;
 
