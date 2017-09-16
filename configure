@@ -4314,7 +4314,7 @@ fi
 
 # Check whether --enable-gpm was given.
 if test "${enable_gpm+set}" = set; then :
-  enableval=$enable_gpm; GPM="$enalbeval"
+  enableval=$enable_gpm; GPM="$enableval"
 else
   GPM=auto
 fi
@@ -4322,7 +4322,7 @@ fi
 
 # Check whether --enable-vesa was given.
 if test "${enable_vesa+set}" = set; then :
-  enableval=$enable_vesa; VESA="$enalbeval"
+  enableval=$enable_vesa; VESA="$enableval"
 else
   VESA=auto
 fi
@@ -4330,7 +4330,7 @@ fi
 
 # Check whether --enable-epoll was given.
 if test "${enable_epoll+set}" = set; then :
-  enableval=$enable_epoll; EPOLL="$enalbeval"
+  enableval=$enable_epoll; EPOLL="$enableval"
 else
   EPOLL=auto
 fi
@@ -4338,7 +4338,7 @@ fi
 
 # Check whether --enable-signalfd was given.
 if test "${enable_signalfd+set}" = set; then :
-  enableval=$enable_signalfd; SIGNALFD="$enalbeval"
+  enableval=$enable_signalfd; SIGNALFD="$enableval"
 else
   SIGNALFD=auto
 fi

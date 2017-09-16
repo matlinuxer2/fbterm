@@ -17,22 +17,22 @@ PKG_PROG_PKG_CONFIG
 
 AC_ARG_ENABLE(gpm, 
               AC_HELP_STRING([--disable-gpm], [disable gpm mouse support [[default=auto]]]), 
-              [GPM="$enalbeval"],
+              [GPM="$enableval"],
               [GPM=auto])
               
 AC_ARG_ENABLE(vesa, 
               AC_HELP_STRING([--disable-vesa], [disable VESA video card support [[default=auto]]]), 
-              [VESA="$enalbeval"],
+              [VESA="$enableval"],
               [VESA=auto])
 
 AC_ARG_ENABLE(epoll, 
               AC_HELP_STRING([--disable-epoll], [do not use epoll system call [[default=auto]]]), 
-              [EPOLL="$enalbeval"],
+              [EPOLL="$enableval"],
               [EPOLL=auto])
 
 AC_ARG_ENABLE(signalfd,
               AC_HELP_STRING([--disable-signalfd], [do not use signalfd system call [[default=auto]]]),
-              [SIGNALFD="$enalbeval"],
+              [SIGNALFD="$enableval"],
               [SIGNALFD=auto])
 
                                           
