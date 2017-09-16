@@ -35,6 +35,7 @@ public:
 	static void enterLeaveVc(bool enter);
 	static void drawCursor();
 	static void redraw(u16 x, u16 y, u16 w, u16 h);
+	void switchCodec(u8 index);
 
 private:
 	FbShell();

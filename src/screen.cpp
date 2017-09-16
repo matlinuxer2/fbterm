@@ -66,7 +66,7 @@ static const s8 show_cursor[] = "\033[?25h";
 static const s8 hide_cursor[] = "\033[?25l";
 static const s8 disable_blank[] = "\033[9;0]";
 static const s8 enable_blank[] = "\033[9;10]";
-static const s8 clean_screen[] = "\033[2J\033[H";
+static const s8 clear_screen[] = "\033[2J\033[H";
 
 static fb_fix_screeninfo finfo;
 static fb_var_screeninfo vinfo;
@@ -79,8 +79,8 @@ Screen *Screen::createInstance()
 	s8 devname[32];
 	s32 devFd;
 	for (u32 i = 0; i < FB_MAX; i++) {
-		snprintf(devname, 32, "/dev/fb%d", i);
-		devFd = open(devname, O_RDWR | O_CLOEXEC);
+		snprintf(devname, sizeof(devname), "/dev/fb%d", i);
+		devFd = open(devname, O_RDWR);
         if (devFd >= 0) break;
 	}
 
@@ -89,6 +89,7 @@ Screen *Screen::createInstance()
 		return 0;
 	}
 
+	fcntl(devFd, F_SETFD, fcntl(devFd, F_GETFD) | FD_CLOEXEC);
 	ioctl(devFd, FBIOGET_FSCREENINFO, &finfo);
 	ioctl(devFd, FBIOGET_VSCREENINFO, &vinfo);
 
@@ -119,7 +120,7 @@ Screen *Screen::createInstance()
 		break;
 
 	default:
-		printf("only support framebuffer with 8/15/16/32 color depth!");
+		printf("only support framebuffer device with 8/15/16/32 color depth!\n");
 		return 0;
 	}
 
@@ -146,8 +147,8 @@ Screen::Screen(s32 fd)
 
 	mScrollAccel = ((ypan || ywrap) && !ioctl(mFd, FBIOPAN_DISPLAY, &vinfo)) ? (ywrap ? 2 : 1) : 0;
 
-	write(STDIN_FILENO, hide_cursor, strlen(hide_cursor));
-	write(STDIN_FILENO, disable_blank, strlen(disable_blank));
+	write(STDIN_FILENO, hide_cursor, sizeof(hide_cursor) - 1);
+	write(STDIN_FILENO, disable_blank, sizeof(disable_blank) - 1);
 	enterLeaveVc(true);	
 }
 
@@ -162,9 +163,9 @@ Screen::~Screen()
 		ioctl(STDIN_FILENO, KDSETMODE, KD_TEXT);
 	}
 
-	write(STDIN_FILENO, show_cursor, strlen(show_cursor));
-	write(STDIN_FILENO, enable_blank, strlen(enable_blank));	
-	write(STDIN_FILENO, clean_screen, strlen(clean_screen));
+	write(STDIN_FILENO, show_cursor, sizeof(show_cursor) - 1);
+	write(STDIN_FILENO, enable_blank, sizeof(enable_blank) - 1);	
+	write(STDIN_FILENO, clear_screen, sizeof(clear_screen) - 1);
 	
 	Font::uninstance();
 }

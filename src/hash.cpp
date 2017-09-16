@@ -92,6 +92,7 @@ template<class T> bool HashTable<T>::find(u32 key, T *pval)
 		if (node->key == key) {
 			ret = true;
 			if (pval) *pval = node->val;
+			break;
 		}
 	}
 

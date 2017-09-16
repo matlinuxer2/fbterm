@@ -27,12 +27,19 @@
 #include "fbterm.h"
 #include "screen.h"
 
+u16 VTerm::init_history_lines()
+{
+	s32 val = 1000;
+	Config::instance()->getOption("history_lines", val);
+
+	if (val < 0) val = 0;
+	if (val > 65535) val = 65535;
+
+	return val;
+}
+
 void Shell::initDefaultColor()
 {
-	static bool inited = false;
-	if (inited) return;
-	inited = true;
-
 	s32 color = -1;
 	Config::instance()->getOption("color_foreground", color);
 	if (color < 0 || color > 7) color = 7;
@@ -42,6 +49,42 @@ void Shell::initDefaultColor()
 	Config::instance()->getOption("color_background", color);
 	if (color < 0 || color > 7) color = 0;
 	default_bcolor = color;
+}
+
+void FbShell::switchCodec(u8 index)
+{
+	if (!index) {
+		setCodec("UTF-8", localCodec());
+		return;
+	}
+
+	if (index > 5) return;
+
+	static s8 buf[128], *codecs[5];
+	static bool inited = false;
+	if (!inited) {
+		inited = true;
+		Config::instance()->getOption("text_encoding", buf, sizeof(buf));
+		if (!*buf) return;
+
+		s8 *cur = buf, *next;
+		u8 i = 0;
+		while (1) {
+			next = strchr(cur, ',');
+			codecs[i++] = cur;
+
+			if (!next) break;
+			*next = 0;
+
+			if (i == 5) break;
+
+			cur = next + 1;
+		}
+	}
+
+	if (codecs[index - 1]) {
+		setCodec("UTF-8", codecs[index - 1]);
+	}
 }
 
 #define screen (Screen::instance())

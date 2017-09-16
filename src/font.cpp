@@ -35,8 +35,7 @@ Font *Font::createInstance()
 	FcInit();
 
 	s8 buf[64];
-	Config::instance()->getOption("font_family", buf, 64);
-	buf[63] = 0;
+	Config::instance()->getOption("font_family", buf, sizeof(buf));
 
 	FcPattern *pat = FcNameParse((FcChar8*)buf);
 

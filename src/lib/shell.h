@@ -126,8 +126,8 @@ private:
 			drawed = false;
 		}
 		u32 pos;
-		bool color_inversed : 1;
-		bool drawed : 1;
+		bool color_inversed;
+		bool drawed;
 	} mMousePointer;
 };
 

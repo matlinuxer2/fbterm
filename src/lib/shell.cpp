@@ -17,7 +17,7 @@
  *
  */
 
-#include <config.h>
+#include "config.h"
 #include <pty.h>
 #include <pwd.h>
 #include <stdio.h>
@@ -36,7 +36,12 @@ Shell::SelectedText Shell::mSelText;
 
 Shell::Shell()
 {
-	initDefaultColor();
+	static bool inited = false;
+	if (!inited) {
+		inited = true;
+		initDefaultColor();
+	}
+	
 	mInverseText = false;
 	mPid = -1;
 }
@@ -70,9 +75,7 @@ void Shell::createChildProcess()
 
 void Shell::readyRead(s8 *buf, u32 len)
 {
-#ifdef DRAW_MOUSE_POINTER
 	clearMousePointer();
-#endif
 	resetTextSelect();
 	input((const u8 *)buf, len);
 }
@@ -86,9 +89,7 @@ void Shell::resize(u16 w, u16 h)
 {
 	if (!w || !h || (w == VTerm::w() && h == VTerm::h())) return;
 
-#ifdef DRAW_MOUSE_POINTER
 	clearMousePointer();
-#endif
 	resetTextSelect();
 
 	struct winsize size;
@@ -103,9 +104,7 @@ void Shell::resize(u16 w, u16 h)
 
 void Shell::keyInput(s8 *buf, u32 len)
 {
-#ifdef DRAW_MOUSE_POINTER
 	clearMousePointer();
-#endif
 	resetTextSelect();
 	write(buf, len);
 }
@@ -118,12 +117,10 @@ void Shell::mouseInput(u16 x, u16 y, s32 type, s32 buttons)
 	s32 btn = buttons & MouseButtonMask;
 	s32 modifies = buttons & ModifyButtonMask;
 
-#ifdef DRAW_MOUSE_POINTER
 	if (type == Move && btn == NoButton) {
 		drawMousePointer(x, y);
 		return;
 	}
-#endif
 
 	bool x10mouse = mode(X10MouseReport);
 	bool x11mouse = mode(X11MouseReport);
@@ -140,7 +137,7 @@ void Shell::mouseInput(u16 x, u16 y, s32 type, s32 buttons)
 	case DblClick:
 		if (btn & LeftButton) val = 0;
 		else if (btn & MidButton) val = 1;
-		else if (btn & RightButton)	val = 2;
+		else if (btn & RightButton) val = 2;
 		break;
 	case Release:
 		if (x11mouse) val = 3;
@@ -157,7 +154,7 @@ void Shell::mouseInput(u16 x, u16 y, s32 type, s32 buttons)
 
 	if (val != -1) {
 		s8 buf[8];
-		snprintf(buf, 8, "\033[M%c%c%c", ' ' + val, ' ' + x + 1, ' ' + y + 1);
+		snprintf(buf, sizeof(buf), "\033[M%c%c%c", ' ' + val, ' ' + x + 1, ' ' + y + 1);
 		sendBack(buf);
 	}
 }
@@ -294,9 +291,7 @@ static void utf16_to_utf8(u16 *buf16, u32 num, s8 *buf8)
 
 void Shell::endTextSelect()
 {
-#ifdef DRAW_MOUSE_POINTER
 	mMousePointer.drawed = false;
-#endif
 
 	u32 len = mSelState.end - mSelState.start + 1;
 	u16 buf[len];
@@ -473,26 +468,26 @@ void Shell::enterLeave(bool enter, Shell *pair)
     enableCursor(enter ? mode(CursorVisible) : false);
 
 	if (!enter) {
-#ifdef DRAW_MOUSE_POINTER
 		clearMousePointer();
-#endif
 		resetTextSelect();
 	}
 }
 
-#ifdef DRAW_MOUSE_POINTER
 void Shell::clearMousePointer()
 {
+#ifdef DRAW_MOUSE_POINTER
 	if (!mMousePointer.drawed) return;
 	mMousePointer.drawed = false;
 
 	if (mMousePointer.color_inversed) {
 		changeTextColor(mMousePointer.pos, mMousePointer.pos, false);
 	}
+#endif
 }
 
 void Shell::drawMousePointer(u16 x, u16 y)
 {
+#ifdef DRAW_MOUSE_POINTER
 	if (charAttr(x,y).type == CharAttr::DoubleRight) x--;
 
 	u32 pos = y * w() + x;
@@ -507,5 +502,5 @@ void Shell::drawMousePointer(u16 x, u16 y)
 	mMousePointer.color_inversed = !(mSelState.color_inversed && pos >= mSelState.start && pos <= mSelState.end);
 
 	changeTextColor(pos, pos, mMousePointer.color_inversed);
-}
 #endif
+}

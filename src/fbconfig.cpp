@@ -33,8 +33,7 @@ Config::Config()
 	mConfigEntrys = 0;
 
 	s8 name[64];
-	snprintf(name, 64, "%s/%s", getenv("HOME"), ".fbtermrc");
-	name[63] = 0;
+	snprintf(name, sizeof(name), "%s/%s", getenv("HOME"), ".fbtermrc");
 
 	struct stat cstat;
 	if (stat(name, &cstat) == -1) {
@@ -76,12 +75,16 @@ Config::~Config()
 
 void Config::getOption(const s8 *key, s8 *val, u32 len)
 {
+	if (!val) return;
+	*val = 0;
+
 	OptionEntry *entry = getEntry(key);
 	if (!entry || !entry->val) return;
 
-	u32 val_len = strlen(entry->val) + 1;
-	if (len > val_len) len = val_len;
+	u32 val_len = strlen(entry->val);
+	if (--len > val_len) len = val_len;
 	memcpy(val, entry->val, len);
+	val[len] = 0;
 }
 
 void Config::getOption(const s8 *key, s32 &val)
@@ -106,6 +109,8 @@ void Config::getOption(const s8 *key, bool &val)
 
 Config::OptionEntry *Config::getEntry(const s8 *key)
 {
+	if (!key) return 0;
+
 	OptionEntry *entry = mConfigEntrys;
 	while (entry) {
 		if (!strcmp(key, entry->key)) break;
@@ -148,16 +153,25 @@ void Config::create_config_file(const s8 *file)
 		"# Lines starting with '#' are ignored.\n"
 		"# Note that end-of-line comments are NOT supported, comments must be on a line of their own.\n"
 		"\n\n"
-		"# font family/pixelsize used by fbterm, mulitple font families must be seperated by ','\n"
+		"# font family/pixelsize used by fbterm, multiple font families must be seperated by ','\n"
 		"font_family=mono\n"
 		"font_size=12\n"
 		"\n"
 		"# default color of foreground/background text\n"
 		"# available colors: 0 = black, 1 = red, 2 = green, 3 = brown, 4 = blue, 5 = magenta, 6 = cyan, 7 = white\n"
 		"color_foreground=7\n"
-		"color_background=0\n";
+		"color_background=0\n"
+		"\n"
+		"# max scroll-back history lines of every window, value must be [0 - 65535], 0 means disable it\n"
+		"history_lines=1000\n"
+		"\n"
+		"# up to 5 additional text encodings, multiple encodings must be seperated by ','\n"
+		"# run 'iconv --list' to get available encodings.\n"
+		"text_encoding=\n"
+		;
+
 
 	s32 fd = open(file, O_WRONLY | O_CREAT, S_IRUSR | S_IWUSR);
-	write(fd, default_config, strlen(default_config));
+	write(fd, default_config, sizeof(default_config) - 1);
 	close(fd);
 }

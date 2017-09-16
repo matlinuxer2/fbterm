@@ -43,7 +43,7 @@ const s8 *IoPipe::localCodec()
 		// The output character set of gettext is, by default, the value of nl_langinfo(CODESET),
 		// which depends on the LC_CTYPE part of the current locale.
 		setlocale(LC_CTYPE, "");
-		strncpy(local_codec, nl_langinfo(CODESET), 31);
+		strncpy(local_codec, nl_langinfo(CODESET), sizeof(local_codec) - 1);
 	}
 	return local_codec;
 }
@@ -119,7 +119,7 @@ void IoPipe::ready(bool isread)
 
 	s8 buf[BUF_SIZE];
 
-	s32 len = read(mFd, buf + mBufLenRead, BUF_SIZE - mBufLenRead);
+	s32 len = read(mFd, buf + mBufLenRead, sizeof(buf) - mBufLenRead);
 	if (len <= 0) return;
 
 	if (mBufLenRead) {

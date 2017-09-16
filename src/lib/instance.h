@@ -45,8 +45,10 @@ classname *classname::instance() \
  \
 void classname::uninstance() \
 { \
-	if (mp##classname) delete mp##classname; \
-	mp##classname = 0; \
+	if (mp##classname) { \
+		delete mp##classname; \
+		mp##classname = 0; \
+	} \
 }
 
 #define DEFINE_INSTANCE_DEFAULT(classname) \

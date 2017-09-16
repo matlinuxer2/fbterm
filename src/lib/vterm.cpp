@@ -61,22 +61,18 @@ VTerm::ModeFlag::ModeFlag()
 	autorepeat_key = true;
 }
 
-const u16 VTerm::history_lines = 300;
+u16 VTerm::history_lines;
 const VTerm::StateOption *VTerm::hash_control_state[256];
 const VTerm::StateOption *VTerm::hash_esc_state[128];
 const VTerm::StateOption *VTerm::hash_square_state[128];
 
 void VTerm::init_state()
 {
-	static bool inited = false;
-	if (inited) return;
-	inited = true;
-
 	#define INIT_STATE_TABLE(a) \
 	do { \
 		bzero(hash_##a, sizeof(hash_##a)); \
 		for (u32 i = 0; a[i].key != (u16)-1; i++) { \
-			for (u32 j = 0; j <= a[i].key >> 8; j++) { \
+			for (u32 j = 0; j <= (a[i].key >> 8); j++) { \
 				hash_##a[(a[i].key & 0xff) + j] = a + i; \
 			} \
 		} \
@@ -89,7 +85,12 @@ void VTerm::init_state()
 
 VTerm::VTerm(u16 w, u16 h)
 {
-	init_state();
+	static bool inited = false;
+	if (!inited) {
+		inited = true;
+		init_state();
+		history_lines = init_history_lines();
+	}
 
 	text = 0;
 	attrs = 0;
@@ -372,9 +373,7 @@ void VTerm::input(const u8 *buf, u32 count)
 		 * them; to display an arbitrary font position use the
 		 * direct-to-font zone in UTF-8 mode.
 		 */
-		bool ok = tc && (c >= 32 ||
-						 !(mode_flags.display_ctrl ? (CTRL_ALWAYS >> c) & 1 :
-						   utf8 || ((CTRL_ACTION >> c) & 1)))
+		bool ok = tc && (c >= 32 || !(mode_flags.display_ctrl ? (CTRL_ALWAYS >> c) & 1 : utf8 || ((CTRL_ACTION >> c) & 1)))
 				  && (c != 127 || mode_flags.display_ctrl)
 				  && (c != 128+27);
 
@@ -512,8 +511,7 @@ void VTerm::do_control_char()
 
 	if (current_state == esc_state || current_state == square_state) {
 		if (cur_char < 128) {
-			const StateOption **hash_table = (current_state == esc_state) ? hash_esc_state : hash_square_state;
-			so = hash_table[cur_char];
+			so = ((current_state == esc_state) ? hash_esc_state : hash_square_state)[cur_char];
 		}
 	} else {
 		for (const StateOption *cur = current_state; cur->key != (u16)-1; cur++) {
@@ -597,9 +595,9 @@ void VTerm::expose(u16 x, u16 y, u16 w, u16 h)
 		u32 yp = get_line(y) * max_width;
 
 		u16 startx = x;
-		if (attrs[yp + startx].type == CharAttr::DoubleRight) startx--;
+		u16 endx = x + w - 1;
 
-		u16 endx = startx + w - 1;
+		if (attrs[yp + startx].type == CharAttr::DoubleRight) startx--;
 		if (attrs[yp + endx].type == CharAttr::DoubleLeft) endx++;
 
 		CharAttr attr = attrs[yp + startx];
@@ -650,13 +648,13 @@ void VTerm::scroll_region(u16 start_y, u16 end_y, s16 num)
 
 	if (fast_scroll) pending_scroll += num;
 
-	memcpy(temp, linenumbers, sizeof(*linenumbers) * height);
+	memcpy(temp, linenumbers, sizeof(temp));
 	if (fast_scroll) {
-		memcpy(temp_sx, dirty_startx, sizeof(*dirty_startx) * height);
-		memcpy(temp_ex, dirty_endx, sizeof(*dirty_endx) * height);
+		memcpy(temp_sx, dirty_startx, sizeof(temp_sx));
+		memcpy(temp_ex, dirty_endx, sizeof(temp_ex));
 	}
 
-	// move the lines by renumbering where they pos32 to
+	// move the lines by renumbering where they point to
 	if (num<mx && -num<mx) {
 		for (y=start_y; y<=end_y; y++) {
 			takey = y+num;

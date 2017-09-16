@@ -372,7 +372,7 @@ void VTerm::status_report()
 		sendBack("\033[0n"); // response 'Terminal OK'
 	} else if (param[0] == 6) { // cursor position report
 		s8 str[32];
-		snprintf(str, 32, "\033[%d;%dR", cursor_y + 1, cursor_x + 1);
+		snprintf(str, sizeof(str), "\033[%d;%dR", cursor_y + 1, cursor_x + 1);
 		sendBack(str);
 	}
 }

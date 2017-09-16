@@ -37,7 +37,7 @@ DEFINE_INSTANCE(TtyInput)
 TtyInput *TtyInput::createInstance()
 {
 	s8 buf[64];
-	if (ttyname_r(STDIN_FILENO, buf, 64)) {
+	if (ttyname_r(STDIN_FILENO, buf, sizeof(buf))) {
 		printf("stdin isn't a tty!\n");
 		return 0;
 	}
@@ -113,6 +113,12 @@ void TtyInput::setupSysKey(bool restore)
 		{T_CTRL_ALT, 46, CTRL_ALT_C},
 		{T_CTRL_ALT, 32, CTRL_ALT_D},
 		{T_CTRL_ALT, 18, CTRL_ALT_E},
+		{T_CTRL_ALT, 59, CTRL_ALT_F1},
+		{T_CTRL_ALT, 60, CTRL_ALT_F2},
+		{T_CTRL_ALT, 61, CTRL_ALT_F3},
+		{T_CTRL_ALT, 62, CTRL_ALT_F4},
+		{T_CTRL_ALT, 63, CTRL_ALT_F5},
+		{T_CTRL_ALT, 64, CTRL_ALT_F6},
 	};
 
 	extern s32 effective_uid;

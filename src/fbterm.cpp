@@ -23,6 +23,7 @@
 #include <sys/ioctl.h>
 #include <sys/syscall.h>
 #include <linux/vt.h>
+#include <linux/version.h>
 #include "fbterm.h"
 #include "fbshell.h"
 #include "fbconfig.h"
@@ -56,7 +57,11 @@ void SignalIo::readyRead(s8 *buf, u32 len)
 {
 	signalfd_siginfo *si = (signalfd_siginfo*)buf;
 	for (len /= sizeof(*si); len--; si++) {
+#if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 24)
+		FbTerm::instance()->processSignal(si->signo);
+#else
 		FbTerm::instance()->processSignal(si->ssi_signo);
+#endif
 	}
 }
 #else
@@ -70,7 +75,7 @@ static void signalHandler(s32 signo)
 
 static void pollSignal()
 {
-	if (!pendsig) return;
+	if (!pendsigs) return;
 	
 	sig_atomic_t sigs = pendsigs;
 	pendsigs = 0;
@@ -201,7 +206,7 @@ void FbTerm::processSysKey(u32 key)
 
 	case SHIFT_PAGEDOWN:
 	case SHIFT_PAGEUP: {
-		Shell *shell = FbShell::activeShell();
+		FbShell *shell = FbShell::activeShell();
 		if (shell) {
 			shell->historyDisplay(false, (key == SHIFT_PAGEDOWN) ? shell->h() : -shell->h());
 		}
@@ -227,6 +232,14 @@ void FbTerm::processSysKey(u32 key)
 	case SHIFT_RIGHT:
 		FbShell::nextShell();
 		break;
+
+	case CTRL_ALT_F1 ... CTRL_ALT_F6: {
+		FbShell *shell = FbShell::activeShell();
+		if (shell) {
+			shell->switchCodec(key - CTRL_ALT_F1);
+		}
+		break;
+	}
 
 	default:
 		break;

@@ -20,8 +20,9 @@
 #include "mouse.h"
 DEFINE_INSTANCE(Mouse)
 
-#include <config.h>
+#include "config.h"
 #ifdef HAVE_GPM_H
+#include <stddef.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <gpm.h>
@@ -36,7 +37,7 @@ DEFINE_INSTANCE(Mouse)
 static s32 open_gpm(Gpm_Connect *conn)
 {
 	s8 buf[64];
-	ttyname_r(STDIN_FILENO, buf, 64);
+	ttyname_r(STDIN_FILENO, buf, sizeof(buf));
 	u32 index = strlen(buf) - 1;
 	while (buf[index] >= '0' && buf[index] <= '9') index--;
 
@@ -50,8 +51,9 @@ static s32 open_gpm(Gpm_Connect *conn)
 	bzero((s8 *)&addr, sizeof(addr));
 	addr.sun_family = AF_UNIX;
 	strncpy(addr.sun_path, GPM_NODE_CTL, sizeof(addr.sun_path) - 1);
-	addr.sun_path[sizeof(addr.sun_path) - 1] = 0;
-	u32 len = sizeof(addr.sun_family) + strlen(GPM_NODE_CTL);
+
+	u32 len = offsetof(sockaddr_un, sun_path) + sizeof(GPM_NODE_CTL) - 1;
+	if (len > sizeof(addr)) len = sizeof(addr);
 
 	if(connect(gpm_fd, (struct sockaddr *)(&addr), len) < 0 ||
 	   write(gpm_fd, conn, sizeof(*conn)) != sizeof(*conn)) {
