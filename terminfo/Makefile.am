@@ -1,4 +1,4 @@
 EXTRA_DIST = fbterm
 
 install-data-local:
-	tic fbterm
+	tic $(top_srcdir)/terminfo/fbterm
