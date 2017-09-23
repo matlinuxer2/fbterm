@@ -1,0 +1,48 @@
+# Reference .gitignore from:
+#  Corin Lawson <corin@phiware.com.au>
+#  Ian Thompson <dalrik370@gmail.com>
+# Thanks!
+
+# Compiled Object files
+*.slo
+*.lo
+*.o
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+
+# autotools build files
+Makefile
+.deps/
+/config.h
+/config.h.in
+/config.log
+/config.status
+/doc/*.[0-9]
+src/**/*.o
+src/**/*.a
+Makefile.in
+/INSTALL
+/aclocal.m4
+/compile
+/configure
+/depcomp
+/install-sh
+/missing
+
+
+# vim files
+*.swp
+
+# project-specific build files
+src/fbterm
+/im/immessage.h
+/im/input_key.h
+/stamp-h1
+/autom4te.cache/
